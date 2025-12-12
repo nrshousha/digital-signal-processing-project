@@ -36,7 +36,8 @@ def impulse_invariant_method(b_analog, a_analog, fs):
     # But invresz expects p to be poles, and format is H(z) = R(z)/P(z).
     b_dig, a_dig = signal.invresz(r_digital, p_digital, k)
     
-    return b_dig, a_dig
+    # Cast to real if imaginary parts are negligible (which they should be for real filters)
+    return np.real(b_dig), np.real(a_dig)
 
 def analyze_filter(b, a, fs, title):
     # Frequency Response
@@ -64,14 +65,13 @@ def analyze_filter(b, a, fs, title):
     # Create an impulse
     impulse_len = 100
     imp = np.zeros(impulse_len)
-    imp[0] = 1.0 / fs # Unit impulse in continuous sense approximation? No, digital unit sample.
-    imp[0] = 1.0 
+    imp[0] = 1.0 # Unit impulse
     
     h_imp = signal.lfilter(b, a, imp)
     t_imp = np.arange(impulse_len) / fs
     
     plt.subplot(3, 1, 3)
-    plt.stem(t_imp * 1000, h_imp) # Plot vs ms
+    plt.stem(t_imp * 1000, np.real(h_imp)) # Plot vs ms, using real part
     plt.title(f"{title} - Impulse Response")
     plt.xlabel("Time (ms)")
     plt.ylabel("Amplitude")
